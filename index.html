@@ -1,0 +1,162 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Debate is (Not) a Lullaby</title>
+
+	<style>
+		body {
+			text-align: center;
+			margin: 0px;
+			padding: 0px;
+		}
+
+		#my_camera{		 
+			width: 320px;
+			height: 240px;
+			padding: 0px;
+			margin: 0 auto;		
+			box-shadow: 0px 0px 25px #333;
+			position: absolute;
+			top: 200px;
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 2;			
+		}
+
+		#facebookProfile {
+			width: 100%;
+			margin: 0px;
+			padding: 0px;
+			z-index: -5;
+		}
+
+		audio {
+			display: none;
+		}
+
+		main {
+			width: 100%;
+			height: 100%;			
+			padding: 0px;
+			margin: 0px;			
+			position: absolute;
+			top: 0px;	
+			left: 0px;
+			z-index: 1;
+		}
+
+		input {
+			width: 150px;			
+			padding: 0px;
+			margin-left: 0 auto;		
+			padding: 15px;
+			background-color: #222; 
+			border: none;
+			color: white;	
+			text-align: center;
+			text-decoration: none;		
+			cursor: pointer;	
+			position: absolute;
+			top: 500px;
+			left: 50%;
+			transform: translateX(-50%);	
+			z-index: 2;			
+		}
+	</style>
+ 
+	<!-- Webcam.min.js -->
+	<script type="text/javascript" src="./webcam.min.js"></script>
+	<!-- P5.min.js -->
+	<script src="./p5.min.js"></script>
+	
+	<script language="JavaScript">
+
+		var image;
+		var gate = 0;
+		var translateIndex = .01;
+		var backgroundIndex = 0;
+
+		var cellSize = 6; 
+
+		function init() { 
+			Webcam.set({
+				width: 320,
+				height: 240,
+				image_format: 'jpeg',
+				jpeg_quality: 90
+			});
+			Webcam.attach( '#my_camera' );					
+		}	
+
+		function setup(){
+			createCanvas(window.innerWidth - 1, window.innerHeight, WEBGL);
+			frameRate(30);			
+			background(255, 0);
+		}	
+
+		function draw() {
+			if (gate == 1) {
+				background(0, backgroundIndex);
+				for (var i = 0; i < image.width / cellSize; i++) {
+					for (var j = 0; j < image.height / cellSize; j++) {
+						
+						let pixel = image.get(i * cellSize, j * cellSize);						
+
+						let x = (i * cellSize) - image.width / 2; 
+						let y = (j * cellSize) - image.height / 2;
+
+						let z = translateIndex * pixel[0]; 
+
+						rectMode(CORNERS);
+
+						push();
+							translate(x, y, z);
+							fill(pixel);
+							noStroke();
+							rect(0, 0, cellSize, cellSize);
+						pop();
+					}
+				}
+				translateIndex+= 0.01;	
+				backgroundIndex += 1;				
+			}
+				
+			
+		};
+
+		function take_snapshot() {		 
+			// take snapshot and get image data
+			Webcam.snap( function(data_uri) {
+				
+				image = loadImage(data_uri); 
+				image.loadPixels();
+				gate = 1;
+
+				// Hiding camera and button elements
+				document.getElementById("sendMessage").style.display = "none";
+				document.getElementById("my_camera").style.display = "none";	
+
+				console.log(image.width + " x " + image.height);
+
+				document.getElementById("music").play();							
+			} );
+		}
+
+	</script>
+</head>
+
+<body onload="init()">
+
+
+		<img id="facebookProfile" src="facebook.png">
+		
+		<div id="my_camera"></div>
+		<input id="sendMessage" type=button value="Send Message" onClick="take_snapshot()">	
+		<main></main>
+
+		<audio id="music" src="./music.mp3"></audio>
+</body>
+
+</html>
+
